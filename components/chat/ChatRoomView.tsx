@@ -9,6 +9,7 @@ type Message = {
   message_id?: number;
   role: "USER" | "ASSISTANT";
   content: string;
+  user_feedback?: "LIKE" | "DISLIKE" | null;
 };
 type RoomStatus = "ACTIVE" | "LOCKED" | "ENDED" | "UNKNOWN";
 
@@ -215,9 +216,18 @@ export function ChatRoomView({ roomId, onRoomCreated }: Props) {
     }
   };
 
-  const handleFeedbackClick = (msgId: number, score: "LIKE" | "DISLIKE") => {
+  const handleFeedbackClick = async (msgId: number, score: "LIKE" | "DISLIKE") => {
     if (score === "LIKE") {
-      void sendFeedbackRequest(msgId, "LIKE");
+      try {
+        await sendFeedbackRequest(msgId, "LIKE");
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.message_id === msgId ? { ...m, user_feedback: "LIKE" } : m
+          )
+        );
+      } catch (e) {
+        console.error(e);
+      }
     } else {
       setTargetMessageId(msgId);
       setIsModalOpen(true);
@@ -339,7 +349,7 @@ export function ChatRoomView({ roomId, onRoomCreated }: Props) {
               </div>
             </div>
           ) : (
-            messages.map((msg, idx) => <ChatMessage key={idx} message_id={msg.message_id} role={msg.role} content={msg.content} onFeedback={handleFeedbackClick}/>)
+            messages.map((msg, idx) => <ChatMessage key={idx} message_id={msg.message_id} role={msg.role} content={msg.content} user_feedback={msg.user_feedback} onFeedback={handleFeedbackClick}/>)
           )}
           <div ref={bottomRef} className="h-24" />
         </div>
@@ -400,6 +410,11 @@ export function ChatRoomView({ roomId, onRoomCreated }: Props) {
         onSubmit={async (reason: string, comment: string) => {
           if (targetMessageId) {
             await sendFeedbackRequest(targetMessageId, "DISLIKE", reason, comment);
+            setMessages((prev) =>
+            prev.map((m) =>
+              m.message_id === targetMessageId ? { ...m, user_feedback: "DISLIKE" } : m
+            )
+          );
             setIsModalOpen(false);
             alert("의견을 보내주셔서 감사합니다.");
           }

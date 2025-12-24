@@ -1,5 +1,7 @@
 import { HandThumbUpIcon, HandThumbDownIcon } from "@heroicons/react/24/outline";
-export function ChatMessage({ message_id, role, content, onFeedback }: { message_id?: number; role: "USER" | "ASSISTANT"; content: string; onFeedback?: (msgId: number, score: "LIKE" | "DISLIKE") => void }) {
+import { HandThumbUpIcon as HandThumbUpSolid, HandThumbDownIcon as HandThumbDownSolid } from "@heroicons/react/24/solid";
+
+export function ChatMessage({ message_id, role, content, onFeedback, user_feedback }: { message_id?: number; role: "USER" | "ASSISTANT"; content: string; user_feedback?: "LIKE" | "DISLIKE" | null; onFeedback?: (msgId: number, score: "LIKE" | "DISLIKE") => void }) {
   const isUser = role === "USER";
   return (
     <div className={`flex w-full mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300 ${isUser ? "justify-end" : "justify-start"}`}>
@@ -27,10 +29,18 @@ export function ChatMessage({ message_id, role, content, onFeedback }: { message
           {!isUser && content && message_id && onFeedback && (
             <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100">
               <button onClick={() => onFeedback(message_id, "LIKE")} className="p-1 hover:bg-gray-100 rounded transition-colors group">
-                <HandThumbUpIcon className="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-500" />
-              </button>
-              <button onClick={() => onFeedback(message_id, "DISLIKE")} className="p-1 hover:bg-gray-100 rounded transition-colors group">
-                <HandThumbDownIcon className="w-3.5 h-3.5 text-gray-400 group-hover:text-pink-500" />
+                {user_feedback === "LIKE" ? (
+                  <HandThumbUpSolid className="w-3.5 h-3.5 text-blue-500" />
+                ) : (
+                  <HandThumbUpIcon className="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-500" />
+                )}              
+                </button>
+                <button onClick={() => onFeedback(message_id, "DISLIKE")} className="p-1 hover:bg-gray-100 rounded transition-colors group">
+                {user_feedback === "DISLIKE" ? (
+                  <HandThumbDownSolid className="w-3.5 h-3.5 text-blue-500" />
+                ) : (
+                  <HandThumbDownIcon className="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-500" />
+                )}
               </button>
             </div>
           )}
